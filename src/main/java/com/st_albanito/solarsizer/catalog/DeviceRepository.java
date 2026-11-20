@@ -12,11 +12,22 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     @Query("""
         SELECT d FROM Device d
         WHERE (d.isCustom = false OR d.createdBy.id = :userId)
-          AND (:categoryId IS NULL OR d.category.id = :categoryId)
-          AND (:search IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))
         ORDER BY d.category.id ASC, d.name ASC
         """)
-    List<Device> searchAvailableDevices(
+    List<Device> searchAllAvailableDevices(
+            @Param("userId") UUID userId,
+            @Param("search") String search
+    );
+
+    @Query("""
+        SELECT d FROM Device d
+        WHERE (d.isCustom = false OR d.createdBy.id = :userId)
+          AND d.category.id = :categoryId
+          AND LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        ORDER BY d.category.id ASC, d.name ASC
+        """)
+    List<Device> searchAvailableDevicesByCategory(
             @Param("userId") UUID userId,
             @Param("categoryId") Short categoryId,
             @Param("search") String search

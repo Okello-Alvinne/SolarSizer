@@ -23,8 +23,8 @@ public class Inverter {
     @Column(nullable = false,length = 20)
     private String type;
 
-    @Column(name="continous_w",nullable = false)
-    private Integer continousW;
+    @Column(name="continuous_w",nullable = false)
+    private Integer continuousW;
     @Column(name="surge_w",nullable = false)
     private Integer surgeW;
 
