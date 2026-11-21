@@ -11,7 +11,7 @@ public record HourlyIrradianceDto(
         Short hour,
 
         @NotNull @DecimalMin("0.0") @DecimalMax("1500.0")
-        BigDecimal ghiWM2,
+        BigDecimal ghiWM2,//GlobalHorizontalIrradiance in W/m²
 
         @NotNull @DecimalMin("-30.0") @DecimalMax("60.0")
         BigDecimal tempC
