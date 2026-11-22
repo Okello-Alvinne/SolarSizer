@@ -51,8 +51,7 @@ public class ProjectController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(
             @AuthenticationPrincipal User currentUSer,
-            @PathVariable(name = "id") UUID id,
-            @Valid @RequestBody ProjectRequest request
+            @PathVariable(name = "id") UUID id
     ){
         projectService.deleteProject(currentUSer, id);
         return ResponseEntity.noContent().build();
