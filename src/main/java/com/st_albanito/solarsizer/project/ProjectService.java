@@ -66,7 +66,7 @@ public class ProjectService {
         Project project = getOwnedProject(currentUser,projectId);
         Device device = deviceRepository.findById(request.deviceId())
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Device not found"));
-        if (Boolean.TRUE.equals(device.isCustom()) &&
+        if (device.isCustom() && //Boolean.TRUE.equals(device.isCustom())
                 (device.getCreatedBy() == null || !device.getCreatedBy().getId().equals(currentUser.getId()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this custom device");
         }
