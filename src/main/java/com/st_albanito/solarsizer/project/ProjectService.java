@@ -86,12 +86,64 @@ public class ProjectService {
         Project saved = projectRepository.save(project);
         return ProjectResponse.from(saved);
     }
-
+    @Transactional
+    public ProjectResponse removeDeviceFromProject(User currentUser,UUID projectId,Long projectDeviceId){
+        Project project = getOwnedProject(currentUser,projectId);
+        ProjectDevice pd = projectDeviceRepository.findByIdAndProjectId(projectDeviceId,projectId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Project Device not found"));
+        project.getDevices().remove(pd);
+        Project saved = projectRepository.save(project);
+        return ProjectResponse.from(saved);
+    }
     private Project getOwnedProject(User currentUser, UUID projectId){
         return projectRepository.findByIdAndUserId(projectId,currentUser.getId())
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Project not Found"));
     }
 
-    private void applyProjectFields(Project project,ProjectRequest request){}
+    private void applyProjectFields(Project project,ProjectRequest request){
+        String mode = request.systemMode().trim().toUpperCase();
+        String loadMethod = request.loadInputMethod().toUpperCase();
+
+        if("MANUAL".equals(loadMethod)&& request.manualDailyKwh()==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Manual Daily KWH is required when load Input Method is manual");
+        }
+        Location location = locationRepository.findById(request.locationId())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Location Not Found"));
+        GridOutageProfile outageProfile = null;
+        if(request.outageProfileId()!=null){
+            outageProfile = outageProfileRepository.findById(request.outageProfileId())
+                    .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Outage Profile Not Found"));
+        }
+
+        Panel panel = null;
+        if(request.panelId()!=null){
+            panel = panelRepository.findById(request.panelId())
+                    .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Panel Not Found"));
+
+        }
+
+        Battery battery = null;
+        if(request.batteryId()!=null){
+            battery = batteryRepository.findById(request.batteryId())
+                    .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Battery Not Found"));
+
+        }
+
+        project.setName(request.name().trim());
+        project.setSystemMode(mode);
+        project.setLocation(location);
+        project.setLoadInputMethod(loadMethod);
+        project.setManualDailyKwh("MANUAL".equals(loadMethod) ? request.manualDailyKwh() : null);
+        project.setAutonomyDays(request.autonomyDays());
+        project.setBackupHoursTarget(request.backupHoursTarget());
+        project.setOutageProfile(outageProfile);
+        project.setTariffPerKwh(request.tariffPerKwh());
+        project.setFeedInPerKwh(request.feedInPerKwh());
+        project.setPanel(panel);
+        project.setBattery(battery);
+        project.setTiltDeg(request.tiltDeg());
+        project.setAzimuthDeg(request.azimuthDeg());
+        project.setSystemLossesPct(request.systemLossesPct() != null ? request.systemLossesPct() : new BigDecimal("14.0"));
+    }
 
 }
