@@ -182,7 +182,7 @@ public class SimulationService {
                 .unmetLoadKwh(BigDecimal.ZERO)
                 .capex(BigDecimal.ZERO)
                 .annualSavings(BigDecimal.ZERO)
-                .assumptionsJson(buildAssumptionsMap(panel, battery, inverter, designPsh, annualAvgPsh, worstMonthPsh, performanceRatio))
+                .assumptionsJson(buildAssumptionsMap(panel, battery, inverter, designPsh, annualAvgPsh, worstMonthPsh, performanceRatio,annualLoadKwh))
                 .build();
 
         Simulation savedSimulation = simulationRepository.save(simulation);
@@ -219,7 +219,6 @@ public class SimulationService {
                 double unmetW = 0.0;
 
                 boolean gridAvailable = switch (mode) {
-                    case "ON_GRID" -> true;
                     case "OFF_GRID" -> false;
                     case "HYBRID" -> {
                         if (outageStart < 0) yield true;
@@ -440,7 +439,7 @@ public class SimulationService {
 
     private Map<String, Object> buildAssumptionsMap(
             Panel panel, Battery battery, Inverter inverter,
-            double designPsh, double annualAvgPsh, double worstMonthPsh, double performanceRatio
+            double designPsh, double annualAvgPsh, double worstMonthPsh, double performanceRatio, double annualLoadKwh
     ) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("panelModel", panel.getBrand() + " " + panel.getModel());
@@ -453,6 +452,7 @@ public class SimulationService {
         map.put("performanceRatio", Math.round(performanceRatio * 1000.0) / 1000.0);
         map.put("bosMarkupPct", 15.0);
         map.put("noctTempC", 45.0);
+        map.put("annualLoadKwh",Math.round(annualLoadKwh * 10.0) / 10.0);
         return map;
     }
 
